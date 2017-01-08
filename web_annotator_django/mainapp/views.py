@@ -15,3 +15,6 @@ import controller
 '''
 def index(request):
 	return HttpResponse(controller.processRequest(request))
+
+def registerUser(request):
+	return controller.handleUserRegistration(request)

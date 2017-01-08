@@ -12,32 +12,17 @@ def processRequest(request):
 	return handleGet(request)
 
 def handleGet(request):
-	c = Geometry(x=0.1,y=0.1,width=0.1,height=0.1)
-	c.save()
-	b = Shape(s_type='rect',geometry=c)
-	b.save()
-	a = Annotation(src='dog.jpg',text='anno1',shapes=b)
-	a.save()
-
 	res = []
-	for anno in Annotation.objects.all():
-		res.append(json.dumps(anno.as_json()))
+	res.append(json.dumps(User.objects.get(first_name="sahar1").as_json()))
 
 	return HttpResponse(res[0], content_type="application/json")
 
-def handlePost(request):
-	request_data = json.load(request.body)
-	if(isValidUser(request_data)):
-		new_user = User(email=request_data["email"],first_name=request_data["first_name"],last_name=request_data["last_name"],password=request_data["password"],affiliation=request["affiliation"])
-		new_user.save()
-	else:
-		return 'error'
+def handleUserRegistration(request):
+	request_body = json.loads(request.body)
+	new_user = User(email= request_body["email"],first_name= request_body["first_name"],last_name= request_body["last_name"],password= request_body["password"],affiliation= request_body["affiliation"])	
+	new_user.save()
 
-	res = []
-	for user in User.objects.all():
-		res.append(json.dumps(user.as_json()))
-
-	return HttpResponse(res[0], content_type="application/json")
+	return HttpResponse(request.method)
 
 def isValidUser(details):
-	return True;
+	return True
