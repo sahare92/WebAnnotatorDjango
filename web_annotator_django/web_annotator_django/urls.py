@@ -23,5 +23,8 @@ urlpatterns = [
     url(r'^login_user/', 'mainapp.views.loginUser'),
     url(r'^add_collection/', 'mainapp.views.addCollection'),
     url(r'^add_manuscript/', 'mainapp.views.addManuscript'),
-    url(r'^add_page/', 'mainapp.views.addPage')     
+    url(r'^add_page/', 'mainapp.views.addPage'),
+    url(r'^add_annotation/', 'mainapp.views.addAnnotation'),    
+    url(r'^get_annotations/', 'mainapp.views.getPageInfoAndAnnotations'),
+    url(r'^get_annotation_html/', 'mainapp.views.getAnnotationHTML'),
 ]

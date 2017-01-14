@@ -4,7 +4,7 @@ import json
 import controller
 
 def index(request):
-	return HttpResponse(controller.processRequest(request))
+	return controller.handleGet(request)
 
 def registerUser(request):
 	return controller.handleUserRegistration(request)
@@ -21,5 +21,11 @@ def addManuscript(request):
 def addPage(request):
 	return controller.handleAddPage(request)
 
+def addAnnotation(request):
+	return controller.handleAddAnnotation(request)
+
 def getPageInfoAndAnnotations(request):
-	return controller.handleGetPageInfoAndAnnotations(request);
+	return controller.handleGetPageInfoAndAnnotations(request)
+
+def getAnnotationHTML(request):
+	return controller.handleGetAnnotationHTML(request)

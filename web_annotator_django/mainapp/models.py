@@ -55,4 +55,3 @@ class Annotation(models.Model):
 
 	def as_json(self):
 		return dict(src=self.page.image_src,text=self.text,shapes=[self.shapes.as_json()])
-
