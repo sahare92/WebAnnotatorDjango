@@ -107,7 +107,7 @@ def handleAddAnnotation(request):
 	new_shape.save()
 	new_anno = Annotation(user=relevant_user,page=relevant_page,text=request_body["text"],shapes=new_shape);
 	new_anno.save()
-	return HttpResponse({"status":"SUCCESS",value:json.dumps(new_anno.as_json)})
+	return HttpResponse({"status":"SUCCESS","value":json.dumps(new_anno.as_json())})
 
 #Called when starting to work on a new annotation session on a certain page
 def handleGetPageInfoAndAnnotations(request):

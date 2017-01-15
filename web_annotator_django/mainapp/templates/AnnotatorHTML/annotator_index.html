@@ -1,91 +1,101 @@
 {% load staticfiles %}
 
 <html>
-<meta charset='utf-8'/>
-	<link type="text/css" rel="stylesheet" href="{% static 'AnnotatorStaticFiles/css/annotorious.css' %}" />
-	<link type="text/css" rel="stylesheet" href="{% static 'AnnotatorStaticFiles/css/main.css' %}" />
-	<script type="text/javascript" src="{% static 'AnnotatorStaticFiles/scripts/annotorious.min.js' %}"></script>
-	<script>
-		//-------Using Annotorious. API - https://annotorious.github.io/api.html ------//
-		//Global variables//
-		var server_address = "{{server_address | safe}}";
-		var work_user = "{{user | safe}}";
-		var work_page_id = "{{page_id | safe}}"; 
-		var anno_info_json = {{value | safe}};		
-		var img_src = "{% static 'AnnotatorStaticFiles/img/' %}" + anno_info_json[0]["src"];
-		var new_annotations = {};
-		var num_of_new_annotations = 0;
+<title> Anno </title>
+<meta charset='utf-8' />
+<link type="text/css" rel="stylesheet" href="{% static 'AnnotatorStaticFiles/css/annotorious.css' %}" />
+<link type="text/css" rel="stylesheet" href="{% static 'AnnotatorStaticFiles/css/main.css' %}" />
+<script type="text/javascript" src="{% static 'AnnotatorStaticFiles/scripts/annotorious.min.js' %}"></script>
+<script>
+	//-------Using Annotorious. API - https://annotorious.github.io/api.html ------//
+	//Global variables//
+	var server_address = "{{server_address | safe}}";
+	var work_user = "{{user | safe}}";
+	var work_page_id = "{{page_id | safe}}"; 
+	var anno_info_json = {{value | safe}};		
+	var img_src = "{% static 'AnnotatorStaticFiles/img/' %}" + anno_info_json[0]["src"];
+	var new_annotations = {};
+	var num_of_new_annotations = 0;
 		
-		//----------------------------Functions-------------------------------//		
-		function init() {
-			//---------------Creating the annotated image--------------------//
-			var main_div= document.getElementById("main_div");
-			var img_element = document.createElement("IMG");
-			img_element.src = img_src;
-			img_element.id = "MyImage";
-			main_div.appendChild(img_element);
-			var main_anno;
-			main_anno = anno.makeAnnotatable(document.getElementById('MyImage'));
+	//----------------------------Functions-------------------------------//		
+	function init() {
+		//---------------Creating the annotated image--------------------//
+		var main_div= document.getElementById("main_div");
+		var img_element = document.createElement("IMG");
+		img_element.src = img_src;
+		img_element.id = "MyImage";
+		main_div.appendChild(img_element);
+		var main_anno;
+		main_anno = anno.makeAnnotatable(document.getElementById('MyImage'));
 
-			//---------------Applying all the current annotations to the image-----------//
-			var all_annos_list = {}
-			anno_info_json.forEach(function(element,index){
-				all_annos_list[index] = {
-					/** The URL of the image where the annotation should go **/
-					src : img_src,
+		//---------------Applying all the current annotations to the image-----------//
+		var all_annos_list = {}
+		anno_info_json.forEach(function(element,index){
+			all_annos_list[index] = {
+				/** The URL of the image where the annotation should go **/
+				src : img_src,
 
-					/** The annotation text **/
-					text : element.text,
+				/** The annotation text **/
+				text : element.text,
 
-					/** The annotation shape **/
-					shapes : element.shapes
-				}
-				anno.addAnnotation(all_annos_list[index], main_anno);
-			});
+				/** The annotation shape **/
+				shapes : element.shapes
+			}
+			anno.addAnnotation(all_annos_list[index], main_anno);
+		});
 
-			//------------------Creating the Handlers for annotation events----------------//
-			anno.addHandler('onAnnotationCreated', function(annotation){
+		//------------------Creating the Handlers for annotation events----------------//
+		anno.addHandler('onAnnotationCreated', function(annotation){
 			new_annotations[num_of_new_annotations] = {
 				src : img_src,
 				text : annotation.text,
 				shapes : annotation.shapes
-			}
-
-			var anno_info_req = {};
-			anno_info_req["user"] = work_user;
-			anno_info_req["page_id"] = work_page_id;
-			anno_info_req["text"] = new_annotations[num_of_new_annotations]["text"];
-			anno_info_req["shape"] = {
-				type: new_annotations[num_of_new_annotations]["shapes"][0]["type"],
-				x:  new_annotations[num_of_new_annotations]["shapes"][0]["geometry"]["x"],
-				y:  new_annotations[num_of_new_annotations]["shapes"][0]["geometry"]["y"],
-				width:  new_annotations[num_of_new_annotations]["shapes"][0]["geometry"]["width"],
-				height:  new_annotations[num_of_new_annotations]["shapes"][0]["geometry"]["height"],
-			};
-
-			console.log(anno_info_req);
-			//Sending the registered user info to the server
-			var oReq = new XMLHttpRequest();
-			oReq.addEventListener("load", this.reqAddAnnoListener);
-			oReq.open("POST", server_address);
-			oReq.send(JSON.stringify(anno_info_req));
-			});
-
+			}	
+			saveWork();
 			num_of_new_annotations ++;				
-		}
+		});
+
+		anno.addHandler('onAnnotationRemoved', function(annotation){
+			new_annotations[num_of_new_annotations] = {
+				src : img_src,
+				text : annotation.text,
+				shapes : annotation.shapes
+			}	
+		});
+	}
 
 	function reqAddAnnoListener() {
 		console.log(this.responseText);
 	}
+
 	//----------------Send HTTPRequest which means - Add, Update and Remove the needed annotations----//
 	function saveWork(){
-		console.log("Supposed to save work");
+		//------------------Add the new annotation to the DB-------------------------//
+		var anno_info_req = {};
+		anno_info_req["user"] = work_user;
+		anno_info_req["page_id"] = work_page_id;
+		anno_info_req["text"] = new_annotations[num_of_new_annotations]["text"];
+		anno_info_req["shape"] = {
+			type: new_annotations[num_of_new_annotations]["shapes"][0]["type"],
+			x:  new_annotations[num_of_new_annotations]["shapes"][0]["geometry"]["x"],
+			y:  new_annotations[num_of_new_annotations]["shapes"][0]["geometry"]["y"],
+			width:  new_annotations[num_of_new_annotations]["shapes"][0]["geometry"]["width"],
+			height:  new_annotations[num_of_new_annotations]["shapes"][0]["geometry"]["height"],
+		};
+
+		console.log(anno_info_req);
+		//Sending the registered user info to the server
+		var oReq = new XMLHttpRequest();
+		oReq.addEventListener("load", this.reqAddAnnoListener);
+		oReq.open("POST", server_address);
+		oReq.send(JSON.stringify(anno_info_req));
 	}
 	</script>
 
-	<body onload="init();">
-		<div id="main_div" align="center">			
-			<button onclick="saveWork()">SAVE WORK</button>
-		</div>
-	</body>
+<body onload="init();">
+	<div id="main_div" align="center">
+		<button onclick="saveWork()">SAVE WORK</button>
+	</div>
+</body>
+
 </html>
