@@ -1,10 +1,28 @@
 {% load staticfiles %}
 
 <html>
-<title> Anno </title>
-<meta charset='utf-8' />
-<link type="text/css" rel="stylesheet" href="{% static 'AnnotatorStaticFiles/css/annotorious.css' %}" />
-<link type="text/css" rel="stylesheet" href="{% static 'AnnotatorStaticFiles/css/main.css' %}" />
+
+<head>
+	<title> Anno </title>
+	<meta charset='utf-8' />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<link type="text/css" rel="stylesheet" href="{% static 'AnnotatorStaticFiles/css/annotorious.css' %}" />
+	<link type="text/css" rel="stylesheet" href="{% static 'AnnotatorStaticFiles/css/main.css' %}" />
+
+	<!-- Bootstrap Core CSS -->
+	<link href="{% static 'AnnotatorStaticFiles/css/bootstrap.min.css' %}" rel="stylesheet">
+
+	<!-- Custom CSS -->
+	<style>
+		body {
+			padding-top: 70px;
+			/* Required padding for .navbar-fixed-top. Remove if using .navbar-static-top. Change if height of navigation changes. */
+		}
+	</style>
+</head>
 <script type="text/javascript" src="{% static 'AnnotatorStaticFiles/scripts/annotorious.min.js' %}"></script>
 <script>
 	//-------Using Annotorious. API - https://annotorious.github.io/api.html ------//
@@ -51,7 +69,6 @@
 				text : annotation.text,
 				shapes : annotation.shapes
 			}	
-			saveWork();
 			num_of_new_annotations ++;				
 		});
 
@@ -71,31 +88,82 @@
 	//----------------Send HTTPRequest which means - Add, Update and Remove the needed annotations----//
 	function saveWork(){
 		//------------------Add the new annotation to the DB-------------------------//
-		var anno_info_req = {};
-		anno_info_req["user"] = work_user;
-		anno_info_req["page_id"] = work_page_id;
-		anno_info_req["text"] = new_annotations[num_of_new_annotations]["text"];
-		anno_info_req["shape"] = {
-			type: new_annotations[num_of_new_annotations]["shapes"][0]["type"],
-			x:  new_annotations[num_of_new_annotations]["shapes"][0]["geometry"]["x"],
-			y:  new_annotations[num_of_new_annotations]["shapes"][0]["geometry"]["y"],
-			width:  new_annotations[num_of_new_annotations]["shapes"][0]["geometry"]["width"],
-			height:  new_annotations[num_of_new_annotations]["shapes"][0]["geometry"]["height"],
-		};
+		for(var i=0; i < num_of_new_annotations; i++){
+			var anno_info_req = {};
+			anno_info_req["user"] = work_user;
+			anno_info_req["page_id"] = work_page_id;
+			anno_info_req["text"] = new_annotations[i]["text"];
+			anno_info_req["shape"] = {
+				type: new_annotations[i]["shapes"][0]["type"],
+				x:  new_annotations[i]["shapes"][0]["geometry"]["x"],
+				y:  new_annotations[i]["shapes"][0]["geometry"]["y"],
+				width:  new_annotations[i]["shapes"][0]["geometry"]["width"],
+				height:  new_annotations[i]["shapes"][0]["geometry"]["height"],
+			};
 
-		console.log(anno_info_req);
-		//Sending the registered user info to the server
-		var oReq = new XMLHttpRequest();
-		oReq.addEventListener("load", this.reqAddAnnoListener);
-		oReq.open("POST", server_address);
-		oReq.send(JSON.stringify(anno_info_req));
+			console.log(anno_info_req);
+			//Sending the registered user info to the server
+			var oReq = new XMLHttpRequest();
+			oReq.addEventListener("load", this.reqAddAnnoListener);
+			oReq.open("POST", server_address);
+			oReq.send(JSON.stringify(anno_info_req));
+		}
 	}
 	</script>
 
+
+
+<!-- *******************BODY START******************** -->
+
 <body onload="init();">
-	<div id="main_div" align="center">
-		<button onclick="saveWork()">SAVE WORK</button>
+	<!-- Navigation -->
+	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+		<div class="container">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+				<a class="navbar-brand" href="#">Workspace</a>
+			</div>
+			<!-- Collect the nav links, forms, and other content for toggling -->
+			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+				<ul class="nav navbar-nav">
+					<li>
+						<a href="#">Collection</a>
+					</li>
+					<li>
+						<a href="#">Manusrcript</a>
+					</li>
+				</ul>
+			</div>
+			<!-- /.navbar-collapse -->
+		</div>
+		<!-- /.container -->
+	</nav>
+	<!-- Page Content -->
+	<div class="container">
+		<div id="main_div" align="center">
+			<!-- the annotation image goes HERE -->
+		</div>
 	</div>
+	<!-- /.container -->
+	<nav class="navbar navbar-inverse navbar-fixed-bottom" role="navigation">
+		<div class="container">
+			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+				<ul class="nav navbar-nav">
+					<li>
+						<a href="#" onclick="saveWork();">Save</a>
+					</li>
+				</ul>
+			</div>
+			<!-- /.navbar-collapse -->
+		</div>
+		<!-- /.container -->
+	</nav>
 </body>
 
 </html>
