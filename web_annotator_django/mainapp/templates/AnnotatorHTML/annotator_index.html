@@ -169,25 +169,27 @@
 		//-------------The DFS algorithm call-------------------//
 		var starting_point = new Point(click_pixel_x_offset, click_pixel_y_offset);
 		var new_anno = findConnectedComponentRect(imgPixels.data, threshold_par, starting_point, imgW, imgH);
-		var test_anno = {
-			/** The URL of the image where the annotation should go **/
-			src : img_src,
+		if(new_anno["right"] - new_anno["left"] > 5 && new_anno["bottom"] - new_anno["top"] > 5){
+			var test_anno = {
+				/** The URL of the image where the annotation should go **/
+				src : img_src,
 
-			/** The annotation text **/
-			text : 'TEST',
+				/** The annotation text **/
+				text : 'TEST',
 
-			/** The annotation shape **/
-			shapes : [{
-				type : 'rect',
-				geometry: {
-					x : new_anno["left"] / imgW,
-					y : new_anno["top"] / imgH,
-					width : (new_anno["right"] - new_anno["left"]) / imgW,
-					height : (new_anno["bottom"] - new_anno["top"]) / imgH,
-				}
-			}]
-		};
-		anno.addAnnotation(test_anno, main_anno);
+				/** The annotation shape **/
+				shapes : [{
+					type : 'rect',
+					geometry: {
+						x : new_anno["left"] / imgW,
+						y : new_anno["top"] / imgH,
+						width : (new_anno["right"] - new_anno["left"]) / imgW,
+						height : (new_anno["bottom"] - new_anno["top"]) / imgH,
+					}
+				}]
+			};
+			anno.addAnnotation(test_anno, main_anno);
+		}
 	}
 
 	</script>

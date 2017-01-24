@@ -95,16 +95,20 @@ function findConnectedComponentRect(img_data, threshold, selected_point, imgW, i
     }      
   }
 
+  console.log(getRedPixelAt(img_data, selected_point, imgW));
+
+  if(getRedPixelAt(img_data, selected_point, imgW) > 50){
+    return {"top": 0, "bottom": 0, "left": 0, "right":0};
+  }
+
   var max_iterations = 700;
   while(!dfs_stack.isEmpty() && max_iterations > 0){
     cur_pnt = dfs_stack.pop();
-    console.log(cur_pnt);
     neighbour_pts = getNeighbours(imgW, imgH, cur_pnt, visited_points);
     while(!neighbour_pts.isEmpty()){
       expandSearch(neighbour_pts.pop(), cur_pnt);
     }
     max_iterations--;
   }
-  console.log(max_iterations);
   return {"top": top_margin, "bottom": bottom_margin, "left": left_margin, "right":right_margin};
 }
