@@ -1,0 +1,105 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/bin/nodejs',
+1 verbose cli   '/usr/bin/npm',
+1 verbose cli   'install',
+1 verbose cli   'coffee-script',
+1 verbose cli   '-g' ]
+2 info using npm@4.1.2
+3 info using node@v7.5.0
+4 silly loadCurrentTree Starting
+5 silly install loadCurrentTree
+6 silly install readGlobalPackageData
+7 silly fetchPackageMetaData coffee-script
+8 silly fetchNamedPackageData coffee-script
+9 silly mapToRegistry name coffee-script
+10 silly mapToRegistry using default registry
+11 silly mapToRegistry registry https://registry.npmjs.org/
+12 silly mapToRegistry data Result {
+12 silly mapToRegistry   raw: 'coffee-script',
+12 silly mapToRegistry   scope: null,
+12 silly mapToRegistry   escapedName: 'coffee-script',
+12 silly mapToRegistry   name: 'coffee-script',
+12 silly mapToRegistry   rawSpec: '',
+12 silly mapToRegistry   spec: 'latest',
+12 silly mapToRegistry   type: 'tag' }
+13 silly mapToRegistry uri https://registry.npmjs.org/coffee-script
+14 verbose get https://registry.npmjs.org/coffee-script not expired, no request
+15 silly install normalizeTree
+16 silly loadCurrentTree Finishing
+17 silly loadIdealTree Starting
+18 silly install loadIdealTree
+19 silly cloneCurrentTree Starting
+20 silly install cloneCurrentTreeToIdealTree
+21 silly cloneCurrentTree Finishing
+22 silly loadShrinkwrap Starting
+23 silly install loadShrinkwrap
+24 silly loadShrinkwrap Finishing
+25 silly loadAllDepsIntoIdealTree Starting
+26 silly install loadAllDepsIntoIdealTree
+27 silly resolveWithNewModule coffee-script@1.12.4 checking installable status
+28 silly cache add args [ 'coffee-script', null ]
+29 verbose cache add spec coffee-script
+30 silly cache add parsed spec Result {
+30 silly cache add   raw: 'coffee-script',
+30 silly cache add   scope: null,
+30 silly cache add   escapedName: 'coffee-script',
+30 silly cache add   name: 'coffee-script',
+30 silly cache add   rawSpec: '',
+30 silly cache add   spec: 'latest',
+30 silly cache add   type: 'tag' }
+31 silly addNamed coffee-script@latest
+32 verbose addNamed "latest" is being treated as a dist-tag for coffee-script
+33 info addNameTag [ 'coffee-script', 'latest' ]
+34 silly mapToRegistry name coffee-script
+35 silly mapToRegistry using default registry
+36 silly mapToRegistry registry https://registry.npmjs.org/
+37 silly mapToRegistry data Result {
+37 silly mapToRegistry   raw: 'coffee-script',
+37 silly mapToRegistry   scope: null,
+37 silly mapToRegistry   escapedName: 'coffee-script',
+37 silly mapToRegistry   name: 'coffee-script',
+37 silly mapToRegistry   rawSpec: '',
+37 silly mapToRegistry   spec: 'latest',
+37 silly mapToRegistry   type: 'tag' }
+38 silly mapToRegistry uri https://registry.npmjs.org/coffee-script
+39 verbose addNameTag registry:https://registry.npmjs.org/coffee-script not in flight; fetching
+40 verbose get https://registry.npmjs.org/coffee-script not expired, no request
+41 silly addNameTag next cb for coffee-script with tag latest
+42 silly addNamed coffee-script@1.12.4
+43 verbose addNamed "1.12.4" is a plain semver version for coffee-script
+44 silly cache afterAdd coffee-script@1.12.4
+45 verbose afterAdd /home/sahar/.npm/coffee-script/1.12.4/package/package.json not in flight; writing
+46 verbose correctMkdir /home/sahar/.npm correctMkdir not in flight; initializing
+47 verbose afterAdd /home/sahar/.npm/coffee-script/1.12.4/package/package.json written
+48 silly loadAllDepsIntoIdealTree Finishing
+49 silly loadIdealTree Finishing
+50 silly currentTree lib
+50 silly currentTree └── coffee-script@1.12.4
+51 silly idealTree lib
+51 silly idealTree └── coffee-script@1.12.4
+52 silly generateActionsToTake Starting
+53 silly install generateActionsToTake
+54 warn checkPermissions Missing write access to /usr/lib/node_modules/coffee-script
+55 warn checkPermissions Missing write access to /usr/lib/node_modules
+56 silly rollbackFailedOptional Starting
+57 silly rollbackFailedOptional Finishing
+58 silly runTopLevelLifecycles Finishing
+59 silly install printInstalled
+60 verbose stack Error: EACCES: permission denied, access '/usr/lib/node_modules/coffee-script'
+61 verbose cwd /home/sahar/GitKraken/WebAnnotatorDjango/web_annotator_django
+62 error Linux 4.4.0-66-generic
+63 error argv "/usr/bin/nodejs" "/usr/bin/npm" "install" "coffee-script" "-g"
+64 error node v7.5.0
+65 error npm  v4.1.2
+66 error path /usr/lib/node_modules/coffee-script
+67 error code EACCES
+68 error errno -13
+69 error syscall access
+70 error Error: EACCES: permission denied, access '/usr/lib/node_modules/coffee-script'
+70 error  { Error: EACCES: permission denied, access '/usr/lib/node_modules/coffee-script'
+70 error   errno: -13,
+70 error   code: 'EACCES',
+70 error   syscall: 'access',
+70 error   path: '/usr/lib/node_modules/coffee-script' }
+71 error Please try running this command again as root/Administrator.
+72 verbose exit [ -13, true ]
