@@ -34,7 +34,7 @@
 	var work_user = "{{user | safe}}";
 	var work_page_id = "{{page_id | safe}}"; 
 	var anno_info_json = {{value | safe}};		
-	var img_src = "{% static 'AnnotatorStaticFiles/img/' %}" + anno_info_json[0]["src"];
+	var img_src = "{% static 'AnnotatorStaticFiles/img/' %}" + "{{img_src | safe}}";
 	var new_annotations = {};
 	var num_of_new_annotations = 0;
 	var removed_annotations = {};
