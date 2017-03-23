@@ -1,0 +1,251 @@
+{% load staticfiles %}
+
+<html>
+
+<head>
+	<title> Anno </title>
+	<meta charset='utf-8' />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<link type="text/css" rel="stylesheet" href="{% static 'AnnotatorStaticFiles/css/annotorious.css' %}" />
+	<link type="text/css" rel="stylesheet" href="{% static 'AnnotatorStaticFiles/css/main.css' %}" />
+
+	<!-- Bootstrap Core CSS -->
+	<link href="{% static 'AnnotatorStaticFiles/css/bootstrap.min.css' %}" rel="stylesheet">
+
+	<!-- Custom CSS -->
+	<style>
+		body {
+			padding-top: 70px;
+			/* Required padding for .navbar-fixed-top. Remove if using .navbar-static-top. Change if height of navigation changes. */
+		}
+	</style>
+</head>
+<script type="text/javascript" src="{% static 'AnnotatorStaticFiles/scripts/annotorious.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'AnnotatorStaticFiles/scripts/algorithms/depthFirstSearch.js' %}"></script>
+<script type="text/javascript" src="{% static 'AnnotatorStaticFiles/scripts/dataStructures.js' %}"></script>
+
+<script>
+	//-------Using Annotorious. API - https://annotorious.github.io/api.html ------//
+	//Global variables//
+	var server_address = "{{server_address | safe}}";
+	var work_user = "{{user | safe}}";
+	var work_page_id = "{{page_id | safe}}"; 
+	var anno_info_json = {{value | safe}};		
+	var img_src = "{% static 'AnnotatorStaticFiles/img/' %}" + anno_info_json[0]["src"];
+	var new_annotations = {};
+	var num_of_new_annotations = 0;
+	var gray_img_element  = document.createElement("IMG");
+	var threshold_par = 60;
+	var main_anno;
+
+	//----------------------------Functions-------------------------------//		
+	function init() {
+		//---------------Creating the annotated image--------------------//
+		var main_div= document.getElementById("main_div");
+		var img_element = document.createElement("IMG");
+
+		img_element.src = img_src;
+		gray_img_element.src = gray(img_element);
+		img_element.id = "MyImage";
+		main_div.appendChild(img_element);
+		main_anno = anno.makeAnnotatable(document.getElementById('MyImage'));
+
+		//---------------Applying all the current annotations to the image-----------//
+		var all_annos_list = {}
+		anno_info_json.forEach(function(element,index){
+			all_annos_list[index] = {
+				/** The URL of the image where the annotation should go **/
+				src : img_src,
+
+				/** The annotation text **/
+				text : element.text,
+
+				/** The annotation shape **/
+				shapes : element.shapes
+			}
+			anno.addAnnotation(all_annos_list[index], main_anno);
+		});
+
+		//------------------Creating the Handlers for annotation events----------------//
+		anno.addHandler('onAnnotationCreated', function(annotation){
+			new_annotations[num_of_new_annotations] = {
+				src : img_src,
+				text : annotation.text,
+				shapes : annotation.shapes
+			}	
+			num_of_new_annotations ++;				
+		});
+
+		anno.addHandler('onAnnotationRemoved', function(annotation){
+			new_annotations[num_of_new_annotations] = {
+				src : img_src,
+				text : annotation.text,
+				shapes : annotation.shapes
+			}	
+		});
+
+		anno.addHandler('onSelectionStarted', (event)=> findAnnotationMargins(event, gray_img_element));
+	}
+
+	function reqAddAnnoListener() {
+		console.log(this.responseText);
+	}
+
+	//----------------Send HTTPRequest which means - Add, Update and Remove the needed annotations----//
+	function saveWork(){
+		//------------------Add the new annotation to the DB-------------------------//
+		for(var i=0; i < num_of_new_annotations; i++){
+			var anno_info_req = {};
+			anno_info_req["user"] = work_user;
+			anno_info_req["page_id"] = work_page_id;
+			anno_info_req["text"] = new_annotations[i]["text"];
+			anno_info_req["shape"] = {
+				type: new_annotations[i]["shapes"][0]["type"],
+				x:  new_annotations[i]["shapes"][0]["geometry"]["x"],
+				y:  new_annotations[i]["shapes"][0]["geometry"]["y"],
+				width:  new_annotations[i]["shapes"][0]["geometry"]["width"],
+				height:  new_annotations[i]["shapes"][0]["geometry"]["height"],
+			};
+
+			console.log(anno_info_req);
+			//Sending the registered user info to the server
+			var oReq = new XMLHttpRequest();
+			oReq.addEventListener("load", this.reqAddAnnoListener);
+			oReq.open("POST", server_address);
+			oReq.send(JSON.stringify(anno_info_req));
+		}
+	}
+
+	function gray(imgObj) {
+		var canvas = document.createElement('canvas');
+		var canvasContext = canvas.getContext('2d');
+		
+		var imgW = imgObj.width;
+		var imgH = imgObj.height;
+		canvas.width = imgW;
+		canvas.height = imgH;
+		
+		canvasContext.drawImage(imgObj, 0, 0);
+		var imgPixels = canvasContext.getImageData(0, 0, imgW, imgH);
+		
+		for(var y = 0; y < imgPixels.height; y++){
+			for(var x = 0; x < imgPixels.width; x++){
+				var i = (y * 4) * imgPixels.width + x * 4;
+				var avg = (imgPixels.data[i] + imgPixels.data[i + 1] + imgPixels.data[i + 2]) / 3;
+				imgPixels.data[i] = avg; 
+				imgPixels.data[i + 1] = avg; 
+				imgPixels.data[i + 2] = avg;
+			}
+		}
+		canvasContext.putImageData(imgPixels, 0, 0, 0, 0, imgPixels.width, imgPixels.height);
+		return canvas.toDataURL();
+	}
+
+	/* 	Called when clicking a certain point on the image.
+		Purpose: Finding the margins of the connected component */
+	function findAnnotationMargins(event, imgObj){
+		click_pixel_x_offset = event.offsetX;
+		click_pixel_y_offset = event.offsetY;
+		var canvas = document.createElement('canvas');
+		var canvasContext = canvas.getContext('2d');
+		
+		var imgW = imgObj.width;
+		var imgH = imgObj.height;
+		canvas.width = imgW;
+		canvas.height = imgH;
+		
+		//Init the annotation margins to be minimal
+		var anno_top_margin = click_pixel_y_offset;
+		var anno_bottom_margin = click_pixel_y_offset;
+		var anno_left_margin = click_pixel_x_offset;
+		var anno_right_margin = click_pixel_x_offset;
+
+		canvasContext.drawImage(imgObj, 0, 0);
+		var imgPixels = canvasContext.getImageData(0, 0, imgW, imgH);	
+		//-------------The DFS algorithm call-------------------//
+		var starting_point = new Point(click_pixel_x_offset, click_pixel_y_offset);
+		var new_anno = findConnectedComponentRect(imgPixels.data, threshold_par, starting_point, imgW, imgH);
+		if(new_anno["right"] - new_anno["left"] > 5 || new_anno["bottom"] - new_anno["top"] > 5){
+			var test_anno = {
+				/** The URL of the image where the annotation should go **/
+				src : img_src,
+
+				/** The annotation text **/
+				text : 'TEST',
+
+				/** The annotation shape **/
+				shapes : [{
+					type : 'rect',
+					geometry: {
+						x : new_anno["left"] / imgW,
+						y : new_anno["top"] / imgH,
+						width : (new_anno["right"] - new_anno["left"]) / imgW,
+						height : (new_anno["bottom"] - new_anno["top"]) / imgH,
+					}
+				}]
+			};
+			anno.addAnnotation(test_anno, main_anno);
+		}
+	}
+
+	</script>
+
+
+
+<!-- *******************BODY START******************** -->
+
+<body onload="init();">
+	<!-- Navigation -->
+	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+		<div class="container">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+				<a class="navbar-brand" href="#">Workspace</a>
+			</div>
+			<!-- Collect the nav links, forms, and other content for toggling -->
+			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+				<ul class="nav navbar-nav">
+					<li>
+						<a href="#">Collection</a>
+					</li>
+					<li>
+						<a href="#">Manusrcript</a>
+					</li>
+				</ul>
+			</div>
+			<!-- /.navbar-collapse -->
+		</div>
+		<!-- /.container -->
+	</nav>
+	<!-- Page Content -->
+	<div class="container">
+		<div id="main_div" align="center">
+			<!-- the annotation image goes HERE -->
+		</div>
+	</div>
+	<!-- /.container -->
+	<nav class="navbar navbar-inverse navbar-fixed-bottom" role="navigation">
+		<div class="container">
+			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+				<ul class="nav navbar-nav">
+					<li>
+						<a href="#" onclick="saveWork();">Save</a>
+					</li>
+				</ul>
+			</div>
+			<!-- /.navbar-collapse -->
+		</div>
+		<!-- /.container -->
+	</nav>
+</body>
+
+</html>

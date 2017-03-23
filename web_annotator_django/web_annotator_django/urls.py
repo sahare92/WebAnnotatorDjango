@@ -18,5 +18,14 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^$', 'mainapp.views.index')
+    url(r'^$', 'mainapp.views.index'),
+    url(r'^register_user/', 'mainapp.views.registerUser'),
+    url(r'^login_user/', 'mainapp.views.loginUser'),
+    url(r'^add_collection/', 'mainapp.views.addCollection'),
+    url(r'^add_manuscript/', 'mainapp.views.addManuscript'),
+    url(r'^add_page/', 'mainapp.views.addPage'),
+    url(r'^add_annotation/', 'mainapp.views.addAnnotation'),    
+    url(r'^get_annotations/', 'mainapp.views.getPageInfoAndAnnotations'),
+    url(r'^get_annotation_html/', 'mainapp.views.getAnnotationHTML'),
+    url(r'^add_files/', 'mainapp.views.addFiles'),    
 ]
