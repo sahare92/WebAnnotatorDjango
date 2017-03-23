@@ -206,7 +206,7 @@ def handleGetAnnotationHTML(request):
 	res = []
 	for anno in relevant_annos:
 		res.append(anno.as_json())
-	items = {"value": json.dumps(res),"server_address":"http://127.0.0.1:8000/","user":used_user.email,"page_id":used_page.id}
+	items = {"value": json.dumps(res),"server_address":"http://127.0.0.1:8000/","user":used_user.email,"page_id":used_page.id,"img_src":used_page.image_src}
 	template = loader.get_template("AnnotatorHTML/annotator_index.html")
 	return HttpResponse(template.render(items))
 
