@@ -10,30 +10,31 @@ import json
 
 #------------FOR TESTS ONLY----------------#
 def handleGet(request):
-	request_body = json.loads(request.body)	
-	try:
-	 	used_collection = MSCollection.objects.get(name = request_body["collection"])
-	except MSCollection.DoesNotExist:
-	 	return HttpResponse("FAIL")	
-	try:
-	 	used_ms = Manuscript.objects.get(name = request_body["manuscript"], collection=used_collection)
-	except Manuscript.DoesNotExist:
-	 	return HttpResponse("FAIL")
-	try:
-	 	used_user = User.objects.get(email = request_body["user_email"])
-	except User.DoesNotExist:
-	 	return HttpResponse("FAIL")
-	try:
-	 	used_page = Page.objects.get(title = request_body["page_title"], manuscript=used_ms)
-	except Page.DoesNotExist:
-	 	return HttpResponse("FAIL")		 
-	relevant_annos = Annotation.objects.filter(user = used_user, page=used_page)	
+	# request_body = json.loads(request.body)	
+	# try:
+	#  	used_collection = MSCollection.objects.get(name = request_body["collection"])
+	# except MSCollection.DoesNotExist:
+	#  	return HttpResponse("FAIL")	
+	# try:
+	#  	used_ms = Manuscript.objects.get(name = request_body["manuscript"], collection=used_collection)
+	# except Manuscript.DoesNotExist:
+	#  	return HttpResponse("FAIL")
+	# try:
+	#  	used_user = User.objects.get(email = request_body["user_email"])
+	# except User.DoesNotExist:
+	#  	return HttpResponse("FAIL")
+	# try:
+	#  	used_page = Page.objects.get(title = request_body["page_title"], manuscript=used_ms)
+	# except Page.DoesNotExist:
+	#  	return HttpResponse("FAIL")		 
+	# relevant_annos = Annotation.objects.filter(user = used_user, page=used_page)	
 
-	res = []
-	for anno in relevant_annos:
-		res.append(anno.as_json())
-	items = {"items": res}
-	return HttpResponse(json.dumps(items), content_type="application/json")
+	# res = []
+	# for anno in relevant_annos:
+	# 	res.append(anno.as_json())
+	# items = {"items": res}
+	# return HttpResponse(json.dumps(items), content_type="application/json")
+	request
 #-------------DONE TESTING-------------------#
 
 #-------------Functions------------------#
@@ -112,6 +113,32 @@ def handleAddAnnotation(request):
 	new_anno.save()
 	return HttpResponse({"status":"SUCCESS","value":json.dumps(new_anno.as_json())})
 
+def handleRemoveAnnotation(request):
+	request_body = json.loads(request.body)
+	try:
+		relevant_user = User.objects.get(email=request_body["user"])
+	except User.DoesNotExist:
+		return HttpResponse({"status":"FAIL", "value":"The User doesn't exist!"})
+	try:
+		relevant_page = Page.objects.get(id=request_body["page_id"])
+	except Page.DoesNotExist:
+		return HttpResponse({"status":"FAIL", "value": "The Page doesn't exist!"})	
+	try: 	
+		new_geometry = Geometry.objects.get(x=request_body["shape"]["x"],y=request_body["shape"]["y"],width=request_body["shape"]["width"],height=request_body["shape"]["height"])
+	except Geometry.DoesNotExist:
+		return HttpResponse({"status":"FAIL", "value": "The Geometry doesn't exist!"})	
+	try:
+		new_shape = Shape.objects.get(s_type=request_body["shape"]["type"], geometry=new_geometry)
+	except Shape.DoesNotExist:
+		return HttpResponse({"status":"FAIL", "value": "The Shape doesn't exist!"})	
+	try:
+		anno_to_remove = Annotation.objects.get(user=relevant_user,page=relevant_page,text=request_body["text"],shapes=new_shape);
+	except Annotation.DoesNotExist:
+		return HttpResponse({"status":"FAIL", "value": "The Annotation doesn't exist!"})	
+	anno_to_remove.delete()
+
+	return HttpResponse({"status":"SUCCESS","value":json.dumps(anno_to_remove.as_json())})
+
 #Called when starting to work on a new annotation session on a certain page
 def handleGetPageInfoAndAnnotations(request):
 	request_body = json.loads(request.body)	
@@ -179,10 +206,11 @@ def handleGetAnnotationHTML(request):
 	res = []
 	for anno in relevant_annos:
 		res.append(anno.as_json())
-	items = {"value": json.dumps(res),"server_address":"http://127.0.0.1:8000/add_annotation/","user":used_user.email,"page_id":used_page.id}
+	items = {"value": json.dumps(res),"server_address":"http://127.0.0.1:8000/","user":used_user.email,"page_id":used_page.id,"img_src":used_page.image_src}
 	template = loader.get_template("AnnotatorHTML/annotator_index.html")
 	return HttpResponse(template.render(items))
 
+# TODO: make it actually work
 def handleAddFiles(request):
 	fs = FileSystemStorage()
 	print("entered")	

@@ -34,9 +34,11 @@
 	var work_user = "{{user | safe}}";
 	var work_page_id = "{{page_id | safe}}"; 
 	var anno_info_json = {{value | safe}};		
-	var img_src = "{% static 'AnnotatorStaticFiles/img/' %}" + anno_info_json[0]["src"];
+	var img_src = "{% static 'AnnotatorStaticFiles/img/' %}" + "{{img_src | safe}}";
 	var new_annotations = {};
 	var num_of_new_annotations = 0;
+	var removed_annotations = {};
+	var num_of_removed_annotations = 0;
 	var gray_img_element  = document.createElement("IMG");
 	var threshold_par = 60;
 	var main_anno;
@@ -75,16 +77,17 @@
 				src : img_src,
 				text : annotation.text,
 				shapes : annotation.shapes
-			}	
-			num_of_new_annotations ++;				
+			};	
+			num_of_new_annotations ++;	
 		});
 
 		anno.addHandler('onAnnotationRemoved', function(annotation){
-			new_annotations[num_of_new_annotations] = {
+			removed_annotations[num_of_removed_annotations] = {
 				src : img_src,
 				text : annotation.text,
 				shapes : annotation.shapes
-			}	
+			};
+			num_of_removed_annotations++;
 		});
 
 		anno.addHandler('onSelectionStarted', (event)=> findAnnotationMargins(event, gray_img_element));
@@ -109,12 +112,29 @@
 				width:  new_annotations[i]["shapes"][0]["geometry"]["width"],
 				height:  new_annotations[i]["shapes"][0]["geometry"]["height"],
 			};
-
-			console.log(anno_info_req);
 			//Sending the registered user info to the server
 			var oReq = new XMLHttpRequest();
 			oReq.addEventListener("load", this.reqAddAnnoListener);
-			oReq.open("POST", server_address);
+			oReq.open("POST", server_address + "add_annotation/");
+			oReq.send(JSON.stringify(anno_info_req));
+		}
+		//------------------Remove the removed annotation from the DB-------------------------//
+		for(var i=0; i < num_of_removed_annotations; i++){
+			var anno_info_req = {};
+			anno_info_req["user"] = work_user;
+			anno_info_req["page_id"] = work_page_id;
+			anno_info_req["text"] = removed_annotations[i]["text"];
+			anno_info_req["shape"] = {
+				type: removed_annotations[i]["shapes"][0]["type"],
+				x:  removed_annotations[i]["shapes"][0]["geometry"]["x"],
+				y:  removed_annotations[i]["shapes"][0]["geometry"]["y"],
+				width:  removed_annotations[i]["shapes"][0]["geometry"]["width"],
+				height:  removed_annotations[i]["shapes"][0]["geometry"]["height"],
+			};
+			//Sending the registered user info to the server
+			var oReq = new XMLHttpRequest();
+			oReq.addEventListener("load", this.reqAddAnnoListener);
+			oReq.open("POST", server_address + "remove_annotation/");
 			oReq.send(JSON.stringify(anno_info_req));
 		}
 	}
