@@ -2,6 +2,9 @@ from django.http import HttpResponse
 from models import Annotation, Shape, Geometry, User, MSCollection, Manuscript, Page
 from django.core import serializers
 from django.template import Context, loader
+from django.core.files.storage import FileSystemStorage
+from django.conf.urls.static import static
+from django.conf import settings
 import json
 
 
@@ -179,3 +182,10 @@ def handleGetAnnotationHTML(request):
 	items = {"value": json.dumps(res),"server_address":"http://127.0.0.1:8000/add_annotation/","user":used_user.email,"page_id":used_page.id}
 	template = loader.get_template("AnnotatorHTML/annotator_index.html")
 	return HttpResponse(template.render(items))
+
+def handleAddFiles(request):
+	fs = FileSystemStorage()
+	print("entered")	
+	for newfile in request.FILES:
+		print("newfile added\n" + newfile.name)	
+		fs.save(newfile.name, newfile)

@@ -29,3 +29,6 @@ def getPageInfoAndAnnotations(request):
 
 def getAnnotationHTML(request):
 	return controller.handleGetAnnotationHTML(request)
+
+def addFiles(request):
+	return controller.handleAddFiles(request)	

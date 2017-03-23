@@ -34,8 +34,7 @@
 	var work_user = "{{user | safe}}";
 	var work_page_id = "{{page_id | safe}}"; 
 	var anno_info_json = {{value | safe}};		
-	// var img_src = "{% static 'AnnotatorStaticFiles/img/' %}" + anno_info_json[0]["src"];
-	var img_src = "{% static 'AnnotatorStaticFiles/img/arabic.jpg' %}";
+	var img_src = "{% static 'AnnotatorStaticFiles/img/' %}" + anno_info_json[0]["src"];
 	var new_annotations = {};
 	var num_of_new_annotations = 0;
 	var gray_img_element  = document.createElement("IMG");
@@ -169,7 +168,7 @@
 		//-------------The DFS algorithm call-------------------//
 		var starting_point = new Point(click_pixel_x_offset, click_pixel_y_offset);
 		var new_anno = findConnectedComponentRect(imgPixels.data, threshold_par, starting_point, imgW, imgH);
-		if(new_anno["right"] - new_anno["left"] > 5 && new_anno["bottom"] - new_anno["top"] > 5){
+		if(new_anno["right"] - new_anno["left"] > 5 || new_anno["bottom"] - new_anno["top"] > 5){
 			var test_anno = {
 				/** The URL of the image where the annotation should go **/
 				src : img_src,

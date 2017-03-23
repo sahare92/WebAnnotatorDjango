@@ -27,4 +27,5 @@ urlpatterns = [
     url(r'^add_annotation/', 'mainapp.views.addAnnotation'),    
     url(r'^get_annotations/', 'mainapp.views.getPageInfoAndAnnotations'),
     url(r'^get_annotation_html/', 'mainapp.views.getAnnotationHTML'),
+    url(r'^add_files/', 'mainapp.views.addFiles'),    
 ]
