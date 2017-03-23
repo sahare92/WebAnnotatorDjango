@@ -30,6 +30,7 @@
 <script>
 	//-------Using Annotorious. API - https://annotorious.github.io/api.html ------//
 	//Global variables//
+	var annotate_by_click = false; // #true - by click | #false(default) - by drag
 	var server_address = "{{server_address | safe}}";
 	var work_user = "{{user | safe}}";
 	var work_page_id = "{{page_id | safe}}"; 
@@ -90,7 +91,7 @@
 			num_of_removed_annotations++;
 		});
 
-		anno.addHandler('onSelectionStarted', (event)=> findAnnotationMargins(event, gray_img_element));
+		anno.addHandler('onSelectionStarted', (event)=> {if(annotate_by_click) {anno.stopSelection(); findAnnotationMargins(event, gray_img_element);}});
 	}
 
 	function reqAddAnnoListener() {
@@ -194,7 +195,7 @@
 				src : img_src,
 
 				/** The annotation text **/
-				text : 'TEST',
+				text : 'Edit to input a text',
 
 				/** The annotation shape **/
 				shapes : [{
@@ -210,7 +211,6 @@
 			anno.addAnnotation(test_anno, main_anno);
 		}
 	}
-
 	</script>
 
 
@@ -259,6 +259,9 @@
 				<ul class="nav navbar-nav">
 					<li>
 						<a href="#" onclick="saveWork();">Save</a>
+					</li>
+					<li>
+						<a href="#" onclick="annotate_by_click = !annotate_by_click;">Click to select</a>
 					</li>
 				</ul>
 			</div>
