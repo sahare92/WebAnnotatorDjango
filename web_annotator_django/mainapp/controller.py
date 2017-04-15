@@ -124,15 +124,15 @@ def handleRemoveAnnotation(request):
 	except Page.DoesNotExist:
 		return HttpResponse({"status":"FAIL", "value": "The Page doesn't exist!"})	
 	try: 	
-		relevant_geometry = Geometry.objects.get(x=request_body["shape"]["x"],y=request_body["shape"]["y"],width=request_body["shape"]["width"],height=request_body["shape"]["height"])
+		new_geometry = Geometry.objects.get(x=request_body["shape"]["x"],y=request_body["shape"]["y"],width=request_body["shape"]["width"],height=request_body["shape"]["height"])
 	except Geometry.DoesNotExist:
 		return HttpResponse({"status":"FAIL", "value": "The Geometry doesn't exist!"})	
 	try:
-		relevant_shape = Shape.objects.get(s_type=request_body["shape"]["type"], geometry=relevant_geometry)
+		new_shape = Shape.objects.get(s_type=request_body["shape"]["type"], geometry=new_geometry)
 	except Shape.DoesNotExist:
 		return HttpResponse({"status":"FAIL", "value": "The Shape doesn't exist!"})	
 	try:
-		anno_to_update = Annotation.objects.get(user=relevant_user,page=relevant_page,text=request_body["text"],shapes=relevant_shape);
+		anno_to_remove = Annotation.objects.get(user=relevant_user,page=relevant_page,text=request_body["text"],shapes=new_shape);
 	except Annotation.DoesNotExist:
 		return HttpResponse({"status":"FAIL", "value": "The Annotation doesn't exist!"})	
 	anno_to_remove.delete()
@@ -150,20 +150,19 @@ def handleUpdateAnnotation(request):
 	except Page.DoesNotExist:
 		return HttpResponse({"status":"FAIL", "value": "The Page doesn't exist!"})	
 	try: 	
-		relevant_geometry = Geometry.objects.get(x=request_body["shape"]["x"],y=request_body["shape"]["y"],width=request_body["shape"]["width"],height=request_body["shape"]["height"])
+		new_geometry = Geometry.objects.get(x=request_body["shape"]["x"],y=request_body["shape"]["y"],width=request_body["shape"]["width"],height=request_body["shape"]["height"])
 	except Geometry.DoesNotExist:
 		return HttpResponse({"status":"FAIL", "value": "The Geometry doesn't exist!"})	
 	try:
-		relevant_shape = Shape.objects.get(s_type=request_body["shape"]["type"], geometry=relevant_geometry)
+		new_shape = Shape.objects.get(s_type=request_body["shape"]["type"], geometry=new_geometry)
 	except Shape.DoesNotExist:
 		return HttpResponse({"status":"FAIL", "value": "The Shape doesn't exist!"})	
 	try:
-		anno_to_remove = Annotation.objects.get(user=relevant_user,page=relevant_page,text=request_body["text"],shapes=relevant_shape);
+		anno_to_update = Annotation.objects.get(user=relevant_user,page=relevant_page,shapes=new_shape);
 	except Annotation.DoesNotExist:
 		return HttpResponse({"status":"FAIL", "value": "The Annotation doesn't exist!"})	
-
 	anno_to_update.text = request_body["text"]
-	anno_to_update.save
+	anno_to_update.save()
 
 	return HttpResponse({"status":"SUCCESS","value":json.dumps(anno_to_update.as_json())})
 
