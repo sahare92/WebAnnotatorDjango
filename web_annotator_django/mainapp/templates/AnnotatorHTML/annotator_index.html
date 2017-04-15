@@ -44,6 +44,13 @@
 	var threshold_par = 60;
 	var main_anno;
 
+	function initLocalAnnotationsChanges(){
+		new_annotations = {};
+		num_of_new_annotations = 0;
+		removed_annotations = {};
+		num_of_removed_annotations = 0;
+	}
+
 	//----------------------------Functions-------------------------------//		
 	function init() {
 		//---------------Creating the annotated image--------------------//
@@ -138,6 +145,9 @@
 			oReq.open("POST", server_address + "remove_annotation/");
 			oReq.send(JSON.stringify(anno_info_req));
 		}
+		
+
+		initLocalAnnotationsChanges(); 			// In order to prevent a double save
 	}
 
 	function gray(imgObj) {
@@ -261,7 +271,9 @@
 						<a href="#" onclick="saveWork();">Save</a>
 					</li>
 					<li>
-						<a href="#" onclick="annotate_by_click = !annotate_by_click;">Click to select</a>
+						<a href="#" onclick="annotate_by_click = !annotate_by_click;">
+							Toggle click\drag
+						</a>					
 					</li>
 				</ul>
 			</div>
