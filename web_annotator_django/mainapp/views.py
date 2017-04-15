@@ -27,6 +27,9 @@ def addAnnotation(request):
 def removeAnnotation(request):
 	return controller.handleRemoveAnnotation(request)	
 
+def updateAnnotation(request):
+	return controller.handleUpdateAnnotation(request)		
+
 def getPageInfoAndAnnotations(request):
 	return controller.handleGetPageInfoAndAnnotations(request)
 

@@ -36,10 +36,14 @@
 	var work_page_id = "{{page_id | safe}}"; 
 	var anno_info_json = {{value | safe}};		
 	var img_src = "{% static 'AnnotatorStaticFiles/img/' %}" + "{{img_src | safe}}";
-	var new_annotations = {};
-	var num_of_new_annotations = 0;
-	var removed_annotations = {};
-	var num_of_removed_annotations = 0;
+	var new_annotations;
+	var num_of_new_annotations;
+	var removed_annotations;
+	var num_of_removed_annotations;
+	var updated_annotations;
+	var num_of_updated_annotations;
+	initLocalAnnotationsChanges();
+
 	var gray_img_element  = document.createElement("IMG");
 	var threshold_par = 60;
 	var main_anno;
@@ -49,6 +53,8 @@
 		num_of_new_annotations = 0;
 		removed_annotations = {};
 		num_of_removed_annotations = 0;
+		updated_annotations = {};
+		num_of_updated_annotations = 0;		
 	}
 
 	//----------------------------Functions-------------------------------//		
@@ -98,11 +104,20 @@
 			num_of_removed_annotations++;
 		});
 
+		anno.addHandler('onAnnotationUpdated', function(annotation){
+			updated_annotations[num_of_updated_annotations] = {
+				src : img_src,
+				text : annotation.text,
+				shapes : annotation.shapes
+			};
+			num_of_updated_annotations++;
+		});
+
 		anno.addHandler('onSelectionStarted', (event)=> {if(annotate_by_click) {anno.stopSelection(); findAnnotationMargins(event, gray_img_element);}});
 	}
 
 	function reqAddAnnoListener() {
-		console.log(this.responseText);
+		console.log(this.response);
 	}
 
 	//----------------Send HTTPRequest which means - Add, Update and Remove the needed annotations----//
@@ -145,7 +160,25 @@
 			oReq.open("POST", server_address + "remove_annotation/");
 			oReq.send(JSON.stringify(anno_info_req));
 		}
-		
+		//------------------Update the wanted annotation in the DB-------------------------//
+		for(var i=0; i < num_of_updated_annotations; i++){
+			var anno_info_req = {};
+			anno_info_req["user"] = work_user;
+			anno_info_req["page_id"] = work_page_id;
+			anno_info_req["text"] = updated_annotations[i]["text"];
+			anno_info_req["shape"] = {
+				type: updated_annotations[i]["shapes"][0]["type"],
+				x:  updated_annotations[i]["shapes"][0]["geometry"]["x"],
+				y:  updated_annotations[i]["shapes"][0]["geometry"]["y"],
+				width:  updated_annotations[i]["shapes"][0]["geometry"]["width"],
+				height:  updated_annotations[i]["shapes"][0]["geometry"]["height"],
+			};
+			//Sending the registered user info to the server
+			var oReq = new XMLHttpRequest();
+			oReq.addEventListener("load", this.reqAddAnnoListener);
+			oReq.open("POST", server_address + "update_annotation/");
+			oReq.send(JSON.stringify(anno_info_req));
+		}
 
 		initLocalAnnotationsChanges(); 			// In order to prevent a double save
 	}
