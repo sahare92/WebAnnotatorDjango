@@ -92,7 +92,7 @@
 				text : annotation.text,
 				shapes : annotation.shapes
 			};	
-			num_of_new_annotations ++;	
+			num_of_new_annotations ++;
 		});
 
 		anno.addHandler('onAnnotationRemoved', function(annotation){
@@ -233,7 +233,7 @@
 		var starting_point = new Point(click_pixel_x_offset, click_pixel_y_offset);
 		var new_anno = findConnectedComponentRect(imgPixels.data, threshold_par, starting_point, imgW, imgH);
 		if(new_anno["right"] - new_anno["left"] > 5 || new_anno["bottom"] - new_anno["top"] > 5){
-			var test_anno = {
+			var annotation = {
 				/** The URL of the image where the annotation should go **/
 				src : img_src,
 
@@ -251,7 +251,14 @@
 					}
 				}]
 			};
-			anno.addAnnotation(test_anno, main_anno);
+			anno.addAnnotation(annotation, main_anno);
+			// Adding the new annotation to the new annotations array
+			new_annotations[num_of_new_annotations] = {
+				src : img_src,
+				text : annotation.text,
+				shapes : annotation.shapes
+			};	
+			num_of_new_annotations ++;			
 		}
 	}
 	</script>
