@@ -26,6 +26,7 @@
 <script type="text/javascript" src="{% static 'AnnotatorStaticFiles/scripts/annotorious.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'AnnotatorStaticFiles/scripts/algorithms/depthFirstSearch.js' %}"></script>
 <script type="text/javascript" src="{% static 'AnnotatorStaticFiles/scripts/dataStructures.js' %}"></script>
+<script type="text/javascript" src="{% static 'AnnotatorStaticFiles/scripts/generalHelpers.js' %}"></script>
 
 <script>
 	//-------Using Annotorious. API - https://annotorious.github.io/api.html ------//
@@ -47,7 +48,10 @@
 	var gray_img_element  = document.createElement("IMG");
 	var threshold_par = 60;
 	var main_anno;
-
+	var text_canvas;
+	var should_show_text;
+	var img_element;
+	var all_annos_array;
 	function initLocalAnnotationsChanges(){
 		new_annotations = {};
 		num_of_new_annotations = 0;
@@ -61,18 +65,25 @@
 	function init() {
 		//---------------Creating the annotated image--------------------//
 		var main_div= document.getElementById("main_div");
-		var img_element = document.createElement("IMG");
+		img_element = document.createElement("IMG");
+		text_canvas = document.createElement("CANVAS");
+		should_show_text = true;
 
 		img_element.src = img_src;
 		gray_img_element.src = gray(img_element);
 		img_element.id = "MyImage";
+		text_canvas.id = "text_layer";
+		text_canvas.width = img_element.width;
+		text_canvas.height = img_element.height;
 		main_div.appendChild(img_element);
+		main_div.appendChild(text_canvas);
+		text_canvas.style = "position: absolute; left:" + img_element.offsetLeft + "; top:" + img_element.offsetTop + "; z-index: 20; display: none";
 		main_anno = anno.makeAnnotatable(document.getElementById('MyImage'));
 
 		//---------------Applying all the current annotations to the image-----------//
-		var all_annos_list = {}
+		all_annos_array = []
 		anno_info_json.forEach(function(element,index){
-			all_annos_list[index] = {
+			all_annos_array[index] = {
 				/** The URL of the image where the annotation should go **/
 				src : img_src,
 
@@ -82,7 +93,7 @@
 				/** The annotation shape **/
 				shapes : element.shapes
 			}
-			anno.addAnnotation(all_annos_list[index], main_anno);
+			anno.addAnnotation(all_annos_array[index], main_anno);
 		});
 
 		//------------------Creating the Handlers for annotation events----------------//
@@ -93,6 +104,7 @@
 				shapes : annotation.shapes
 			};	
 			num_of_new_annotations ++;
+			addAnnotationToArray(all_annos_array, annotation);
 		});
 
 		anno.addHandler('onAnnotationRemoved', function(annotation){
@@ -102,6 +114,7 @@
 				shapes : annotation.shapes
 			};
 			num_of_removed_annotations++;
+			removeAnnotationFromArray(all_annos_array, annotation);
 		});
 
 		anno.addHandler('onAnnotationUpdated', function(annotation){
@@ -111,6 +124,7 @@
 				shapes : annotation.shapes
 			};
 			num_of_updated_annotations++;
+			editAnnotationInArray(all_annos_array, annotation);
 		});
 
 		anno.addHandler('onSelectionStarted', (event)=> {if(annotate_by_click) {anno.stopSelection(); findAnnotationMargins(event, gray_img_element);}});
@@ -183,30 +197,7 @@
 		initLocalAnnotationsChanges(); 			// In order to prevent a double save
 	}
 
-	function gray(imgObj) {
-		var canvas = document.createElement('canvas');
-		var canvasContext = canvas.getContext('2d');
-		
-		var imgW = imgObj.width;
-		var imgH = imgObj.height;
-		canvas.width = imgW;
-		canvas.height = imgH;
-		
-		canvasContext.drawImage(imgObj, 0, 0);
-		var imgPixels = canvasContext.getImageData(0, 0, imgW, imgH);
-		
-		for(var y = 0; y < imgPixels.height; y++){
-			for(var x = 0; x < imgPixels.width; x++){
-				var i = (y * 4) * imgPixels.width + x * 4;
-				var avg = (imgPixels.data[i] + imgPixels.data[i + 1] + imgPixels.data[i + 2]) / 3;
-				imgPixels.data[i] = avg; 
-				imgPixels.data[i + 1] = avg; 
-				imgPixels.data[i + 2] = avg;
-			}
-		}
-		canvasContext.putImageData(imgPixels, 0, 0, 0, 0, imgPixels.width, imgPixels.height);
-		return canvas.toDataURL();
-	}
+
 
 	/* 	Called when clicking a certain point on the image.
 		Purpose: Finding the margins of the connected component */
@@ -261,8 +252,29 @@
 			num_of_new_annotations ++;			
 		}
 	}
-	</script>
 
+	function toggleShowText() {
+		if (should_show_text){
+			text_canvas.style = "position: absolute; left:" + img_element.offsetLeft + "; top:" + img_element.offsetTop + "; z-index: 20;";
+			changeElementInnerHTML("toggleClickDragButton", "Hide text");
+			loadAnnotationsText();
+		}
+		else{
+			text_canvas.style = "position: absolute; left:" + img_element.offsetLeft + "; top:" + img_element.offsetTop + "; z-index: 20; display: none";
+			changeElementInnerHTML("toggleClickDragButton", "Show text");
+		}
+		should_show_text = !should_show_text; // for the next time the user clicks the button
+	}
+
+	function loadAnnotationsText() {
+		resetDraw("text_layer");
+		all_annos_array.forEach( (a)=> {
+			pos = getTextPostition(a);
+			console.log (pos);
+			draw("text_layer",a.text,pos.left,pos.top);
+		});
+	}
+	</script>
 
 
 <!-- *******************BODY START******************** -->
@@ -298,7 +310,7 @@
 	</nav>
 	<!-- Page Content -->
 	<div class="container">
-		<div id="main_div" align="center">
+		<div id="main_div" align="center" style="position: absolute;">
 			<!-- the annotation image goes HERE -->
 		</div>
 	</div>
@@ -311,10 +323,15 @@
 						<a href="#" onclick="saveWork();">Save</a>
 					</li>
 					<li>
-						<a href="#" onclick="annotate_by_click = !annotate_by_click;">
+						<a onclick="annotate_by_click = !annotate_by_click;">
 							Toggle click\drag
 						</a>					
 					</li>
+					<li>
+						<a id="toggleClickDragButton" onclick="toggleShowText()">
+							Show text
+						</a>					
+					</li>					
 				</ul>
 			</div>
 			<!-- /.navbar-collapse -->
