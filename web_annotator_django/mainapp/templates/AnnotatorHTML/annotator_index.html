@@ -51,6 +51,7 @@
 	var text_canvas;
 	var should_show_text;
 	var img_element;
+	var all_annos_array;
 	function initLocalAnnotationsChanges(){
 		new_annotations = {};
 		num_of_new_annotations = 0;
@@ -80,9 +81,9 @@
 		main_anno = anno.makeAnnotatable(document.getElementById('MyImage'));
 
 		//---------------Applying all the current annotations to the image-----------//
-		var all_annos_list = {}
+		all_annos_array = []
 		anno_info_json.forEach(function(element,index){
-			all_annos_list[index] = {
+			all_annos_array[index] = {
 				/** The URL of the image where the annotation should go **/
 				src : img_src,
 
@@ -92,7 +93,7 @@
 				/** The annotation shape **/
 				shapes : element.shapes
 			}
-			anno.addAnnotation(all_annos_list[index], main_anno);
+			anno.addAnnotation(all_annos_array[index], main_anno);
 		});
 
 		//------------------Creating the Handlers for annotation events----------------//
@@ -103,6 +104,7 @@
 				shapes : annotation.shapes
 			};	
 			num_of_new_annotations ++;
+			addAnnotationToArray(all_annos_array, annotation);
 		});
 
 		anno.addHandler('onAnnotationRemoved', function(annotation){
@@ -112,6 +114,7 @@
 				shapes : annotation.shapes
 			};
 			num_of_removed_annotations++;
+			removeAnnotationFromArray(all_annos_array, annotation);
 		});
 
 		anno.addHandler('onAnnotationUpdated', function(annotation){
@@ -121,6 +124,7 @@
 				shapes : annotation.shapes
 			};
 			num_of_updated_annotations++;
+			editAnnotationInArray(all_annos_array, annotation);
 		});
 
 		anno.addHandler('onSelectionStarted', (event)=> {if(annotate_by_click) {anno.stopSelection(); findAnnotationMargins(event, gray_img_element);}});
@@ -253,12 +257,22 @@
 		if (should_show_text){
 			text_canvas.style = "position: absolute; left:" + img_element.offsetLeft + "; top:" + img_element.offsetTop + "; z-index: 20;";
 			changeElementInnerHTML("toggleClickDragButton", "Hide text");
+			loadAnnotationsText();
 		}
 		else{
 			text_canvas.style = "position: absolute; left:" + img_element.offsetLeft + "; top:" + img_element.offsetTop + "; z-index: 20; display: none";
 			changeElementInnerHTML("toggleClickDragButton", "Show text");
 		}
 		should_show_text = !should_show_text; // for the next time the user clicks the button
+	}
+
+	function loadAnnotationsText() {
+		resetDraw("text_layer");
+		all_annos_array.forEach( (a)=> {
+			pos = getTextPostition(a);
+			console.log (pos);
+			draw("text_layer",a.text,pos.left,pos.top);
+		});
 	}
 	</script>
 

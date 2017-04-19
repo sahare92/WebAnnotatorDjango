@@ -25,15 +25,38 @@ function gray(imgObj) {
 
 function draw(canvasid, text, x, y) {
   var ctx = document.getElementById(canvasid).getContext('2d');
-  ctx.font = '24px serif';
-  ctx.strokeStyle = 'red';
-	  ctx.lineWidth = 0.5;
-  ctx.fillStyle = 'black';
+  ctx.font = '20px serif';
+  ctx.strokeStyle = 'green';
+  ctx.lineWidth = 0.5;
+  ctx.fillStyle = 'yellow';
   ctx.fillText(text, x, y);
   ctx.strokeText(text, x, y);
+}
+
+function resetDraw(canvasid){
+  var ctx = document.getElementById(canvasid).getContext('2d');
+  ctx.clearRect(0, 0, 10000, 10000); // 10,000 is a big enough num of pixels to clear :)
 }
 
 function changeElementInnerHTML(elementId, newInnerHTML){
 	element = document.getElementById(elementId);
 	element.innerHTML = newInnerHTML;
+}
+
+function removeAnnotationFromArray( annos_array, annotation ) {
+	index = annos_array.findIndex((cur_anno) => (cur_anno.text == annotation.text && cur_anno.shapes == annotation.shapes))
+	annos_array.splice(index,1); // remove the item from the array
+}
+function addAnnotationToArray( annos_array, annotation ) {
+	annos_array.push(annotation);
+}
+function editAnnotationInArray( annos_array, annotation ) {
+	index = annos_array.findIndex((cur_anno) => cur_anno.shapes == annotation.shapes)
+	annos_array[index].text = annotation.text;
+}
+// transforms the position from precents to pixels and returns the bottom-left corner
+function getTextPostition(annotation) {
+	x = annotation.shapes[0].geometry.x*img_element.width;
+	y = (annotation.shapes[0].geometry.y + annotation.shapes[0].geometry.height*0.7)*img_element.height;
+	return {left: x, top: y};
 }
