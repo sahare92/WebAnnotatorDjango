@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.http import HttpResponse
 from models import Annotation, Shape, Geometry, User, MSCollection, Manuscript, Page
 from django.core import serializers
@@ -6,7 +7,6 @@ from django.core.files.storage import FileSystemStorage
 from django.conf.urls.static import static
 from django.conf import settings
 import json
-
 
 #------------FOR TESTS ONLY----------------#
 def handleGet(request):
